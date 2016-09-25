@@ -1,0 +1,5 @@
+.DS_Store
+*.cPickle
+*.ids
+*.txt
+emb.npy
