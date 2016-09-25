@@ -10,13 +10,14 @@
 - [Python 2.7](https://www.python.org/)
 - [Tensorflow](https://www.tensorflow.org/) (tested with version 0.10.0rc0)
 - [Numpy](http://www.numpy.org/)
+- [Scipy](http://www.scipy.org/)
 
 
-To visualize the results (`visualize.ipynb`)
+[//]: # "To visualize the results (`visualize.ipynb`)"
 
-- [Pandas](http://pandas.pydata.org/)
-- [Matplotlib](matplotlib.org)
-- [Scikit-learn](http://scikit-learn.org/)
+[//]: # "- [Pandas](http://pandas.pydata.org/)"
+[//]: # "- [Matplotlib](matplotlib.org)"
+[//]: # "- [Scikit-learn](http://scikit-learn.org/)"
 
 
 ## Data
@@ -82,27 +83,20 @@ tensorboard --logdir=./train/1473898241
 ```
 
 
-## Architecture
+[//]: # "## Architecture"
 
-![CNN Architecture](img/cnn.png)
+[//]: # "![CNN Architecture](img/cnn.png)"
 
 
-## Results
+[//]: # "## Results"
 
-|       |  P |  R |  F |AUC |
-|:------|:--:|:--:|:--:|:--:|
-|ML+NEG |0.93|0.89|0.91|0.92|
-|ML+CONT|0.79|0.65|0.71|0.73| 
-|ML+CONT+NEG|0.82|0.75|0.78|0.79|
+[//]: # "|       |  P |  R |  F |AUC |"
+[//]: # "|:------|:--:|:--:|:--:|:--:|"
+[//]: # "|ML+NEG |0.93|0.89|0.91|0.92|"
+[//]: # "|ML+CONT|0.79|0.65|0.71|0.73|"
+[//]: # "|ML+CONT+NEG|0.82|0.75|0.78|0.79|"
 
-![F1](img/f1.png)
-![AUC](img/auc.png)
-![Loss](img/loss.png)
-![PR_Curve](img/pr_curve.png)
-![ER-CNN Embeddings](img/emb_er.png)
-![MLMI-CNN Embeddings](img/emb_cnn.png)
-![MLMI-CONT Left Embeddings](img/emb_left.png)
-![MLMI-CONT Right Embeddings](img/emb_right.png)
+[//]: # "![F1](img/f1.png)"
 
 
 ## References
@@ -111,6 +105,6 @@ tensorboard --logdir=./train/1473898241
 * http://github.com/dennybritz/cnn-text-classification-tf
 * http://www.wildml.com/2015/12/implementing-a-cnn-for-text-classification-in-tensorflow/
 * http://tkengo.github.io/blog/2016/03/14/text-classification-by-cnn/
-* Adel et al. [Comparing Convolutional Neural Networks to Traditional Models for Slot Filling](http://arxiv.org/abs/1603.05157) NAACL 2016
+* Mihaylov and Frank. [Discourse Relation Sense Classification Using Cross-argument Semantic Similarity Based on Word Embeddings](https://aclweb.org/anthology/K/K16/K16-2014.pdf) ACL 2016
 * Nguyen and Grishman. [Relation Extraction: Perspective from Convolutional Neural Networks](http://www.cs.nyu.edu/~thien/pubs/vector15.pdf) NAACL 2015
-* Lin et al. [Neural Relation Extraction with Selective Attention over Instances](http://www.aclweb.org/anthology/P/P16/P16-1200.pdf) ACL 2016
+* Zhang and Wallace. [Active Discriminative Word Embedding Learning](https://arxiv.org/pdf/1606.04212v1.pdf) arXiv:1606.04212
