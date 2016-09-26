@@ -113,14 +113,15 @@ class Model(object):
         losses = []
 
 
-        with tf.variable_scope('embedding-left') as scope:
-            self._W_emb_left = _variable_on_cpu(name=scope.name, shape=[self.vocab_size, self.emb_size],
+        with tf.variable_scope('embedding') as scope:
+            # left context
+            self._W_emb_left = _variable_on_cpu(name='%s-left' % scope.name, shape=[self.vocab_size, self.emb_size],
                                       initializer=tf.random_uniform_initializer(minval=-1.0, maxval=1.0))
             sent_batch_left = tf.nn.embedding_lookup(params=self._W_emb_left, ids=self._left)
             input_left = tf.expand_dims(sent_batch_left, -1)
 
-        with tf.variable_scope('embedding-right') as scope:
-            self._W_emb_right = _variable_on_cpu(name=scope.name, shape=[self.vocab_size, self.emb_size],
+            # right context
+            self._W_emb_right = _variable_on_cpu(name='%s-right' % scope.name, shape=[self.vocab_size, self.emb_size],
                                       initializer=tf.random_uniform_initializer(minval=-1.0, maxval=1.0))
             sent_batch_right = tf.nn.embedding_lookup(params=self._W_emb_right, ids=self._right)
             input_right = tf.expand_dims(sent_batch_right, -1)
@@ -157,14 +158,14 @@ class Model(object):
         with tf.variable_scope('loss') as scope:
             cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(self.logits, self._labels,
                                                                     name='cross_entropy_per_example')
+            cross_entropy_loss = tf.reduce_mean(cross_entropy, name='cross_entropy_loss')
+            losses.append(cross_entropy_loss)
 
             if self.neg_samp: # apply negative sampling
                 neg = tf.nn.sigmoid_cross_entropy_with_logits(self.logits, self._negative)
                 neg_samp_loss = tf.mul(-1.0 * self.mu, tf.reduce_mean(neg), name='negative_sampling_loss')
                 losses.append(neg_samp_loss)
 
-            cross_entropy_loss = tf.reduce_mean(cross_entropy, name='cross_entropy_loss')
-            losses.append(cross_entropy_loss)
             self._total_loss = tf.add_n(losses, name='total_loss')
 
         # eval with auc-pr metric

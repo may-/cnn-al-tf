@@ -136,14 +136,14 @@ class Model(object):
         with tf.variable_scope('loss') as scope:
             cross_entropy = tf.nn.sigmoid_cross_entropy_with_logits(self.logits, self._labels,
                                                                     name='cross_entropy_per_example')
+            cross_entropy_loss = tf.reduce_mean(cross_entropy, name='cross_entropy_loss')
+            losses.append(cross_entropy_loss)
 
             if self.neg_samp: # apply negative sampling
                 neg = tf.nn.sigmoid_cross_entropy_with_logits(self.logits, self._negative)
                 neg_samp_loss = tf.mul(-1.0 * self.mu, tf.reduce_mean(neg), name='negative_sampling_loss')
                 losses.append(neg_samp_loss)
 
-            cross_entropy_loss = tf.reduce_mean(cross_entropy, name='cross_entropy_loss')
-            losses.append(cross_entropy_loss)
             self._total_loss = tf.add_n(losses, name='total_loss')
 
 
@@ -175,6 +175,7 @@ class Model(object):
                 opt = tf.train.GradientDescentOptimizer(self._lr)
             else:
                 raise ValueError("Optimizer not supported.")
+
             grads = opt.compute_gradients(self._total_loss)
             self._train_op = opt.apply_gradients(grads)
 

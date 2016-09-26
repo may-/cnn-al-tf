@@ -3,3 +3,4 @@
 *.ids
 *.txt
 emb.npy
+conll/

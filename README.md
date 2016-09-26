@@ -1,4 +1,4 @@
-# Convolutional Neural Network for Relation Extraction
+# Convolutional Neural Network for Discourse Relation Sense Classification
 
 **Note:** This project is mostly based on https://github.com/yuhaozhang/sentence-convnet
 
@@ -22,7 +22,7 @@
 
 ## Data
 - We used Penn Discourse Treebank ver. 2.0.  
-    Assume that CoNLL 2016 data is stored in json format under `data/conll` dir.
+    Assume that [CoNLL 2016](http://www.cs.brandeis.edu/~clp/conll16st/) data is stored in json format under `data/conll` dir.
     ```
     cnn-al-tf
     ├── ...
@@ -70,10 +70,17 @@ may cause an error. If you want to train the model on another dataset, please ch
 
 ### Evaluation
 
-```sh
-python ./eval.py --train_dir=./train/1473898241
-```
-Replace the `--train_dir` with the output from the training.
+- Display F1 and AUC score (overall performance)
+    ```sh
+    python ./eval.py --train_dir=./train/1473898241
+    ```
+
+- Display classification report (class-wise performance)
+    ```sh
+    python ./predict.py --train_dir=./train/1473898241
+    ```
+
+Replace `--train_dir` with the output from the training.
 
 
 ### Run TensorBoard
@@ -86,6 +93,19 @@ tensorboard --logdir=./train/1473898241
 [//]: # "## Architecture"
 
 [//]: # "![CNN Architecture](img/cnn.png)"
+
+
+
+## Models
+
+- Hierarchical Multi-label Model  
+    class annotation:  
+    
+- Negative Sampling Model  
+    objective function:  
+    
+- Active Learning on Word Embeddings  
+
 
 
 [//]: # "## Results"

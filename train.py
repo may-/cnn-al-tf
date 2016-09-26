@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+##########################################################
+#
+# Train Convolutional Neural Network
+#
+#
+#   Note: this implementation is mostly based on
+#   https://github.com/yuhaozhang/sentence-convnet/blob/master/main.py
+#
+##########################################################
+
 from datetime import datetime
 import time
 import os
@@ -54,6 +64,7 @@ def train(train_data, test_data):
         config['max_window'] = config['sent_len']
 
     # save flags
+    config['train_dir'] = out_dir
     util.dump_to_file(os.path.join(out_dir, 'flags.cPickle'), config)
 
     # display parameter settings
@@ -135,7 +146,7 @@ def train(train_data, test_data):
                     feed[m.negative] = np.array(n_batch)
                 start_time = time.time()
                 _, loss_value, eval_value = sess.run([m.train_op, m.total_loss, m.eval_op], feed_dict=feed)
-                proc_duration = time.time() - start_time
+                duration = time.time() - start_time
                 train_loss.append(loss_value)
                 pre, rec = zip(*eval_value)
                 auc = util.calc_auc_pr(pre, rec)
@@ -147,11 +158,11 @@ def train(train_data, test_data):
 
                 # print log
                 if global_step % FLAGS.log_step == 0:
-                    examples_per_sec = batch_size / proc_duration
+                    examples_per_sec = batch_size / duration
                     format_str = '%s: step %d/%d, f1 = %.4f, auc = %.4f, loss = %.4f ' + \
                                  '(%.1f examples/sec; %.3f sec/batch), lr: %.6f'
                     print format_str % (datetime.now(), global_step, max_steps, f1, auc, loss_value,
-                                        examples_per_sec, proc_duration, current_lr)
+                                        examples_per_sec, duration, current_lr)
 
 
 

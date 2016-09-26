@@ -162,7 +162,7 @@ def read_data(data_dir, name, sent_len, negative=False, hierarchical=False, shuf
     with open(source_path, mode="r", encoding="utf-8") as source_file:
         with open(target_path, mode="r", encoding="utf-8") as target_file:
             source, target = source_file.readline(), target_file.readline()
-            print "Loading %s data..." % name,
+            print "Loading %s data ..." % name,
             while source and target:
                 source_ids = [np.int64(x.strip()) for x in source.split()]
                 if sent_len > len(source_ids):
@@ -361,10 +361,11 @@ def calc_auc_pr(precision, recall):
 ##########################################################
 
 #TODO
-def active_learning(data, batch_size, num_epochs, shuffle=True):
+def active_learning(data, batch_size, num_epochs, pool_size, shuffle=True):
     data = np.array(data)
     data_size = len(data)
     num_batches_per_epoch = int(np.ceil(float(data_size)/batch_size))
+    pool_index = []
     for epoch in range(num_epochs):
         # Shuffle data at each epoch
         if shuffle:
@@ -384,7 +385,7 @@ def next_batch():
 def most_informative(pool_data, config, strategy='max_entropy'):
     import predict
 
-    scores, preds = predict.predict(pool_data, config)
+    scores, preds, oracle = predict.predict(pool_data, config)
 
     # last batch
     if config['batch_size'] >= len(pool_data):
@@ -407,7 +408,7 @@ def most_informative(pool_data, config, strategy='max_entropy'):
             idx = list(idx)[:config['batch_size']] # take first-k examples
 
     # prediction
-    return idx, preds[5, :, :]
+    return idx, preds[5, :, :], oracle
 
 ##########################################################
 #
@@ -435,7 +436,7 @@ def binarize_label(class_names, labels, hierarchical=False):
 
 def pseudo_negative_sampling(y_true, class_names, relations, hierarchical=False):
     """Sample negative class"""
-    inverse = {k: 1.0/v for k, v in relations.iteritems() if k != tuple(y_true)}
+    inverse = {k: np.power(1.0/v, 0.5) for k, v in relations.iteritems() if k != tuple(y_true)}
     s = sum(inverse.values())
     candidates = {k: v/float(s) for k, v in inverse.iteritems()}
     i = np.random.choice(np.arange(0, len(candidates), dtype=int), p=candidates.values())
