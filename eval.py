@@ -50,7 +50,7 @@ def evaluate(eval_data, config):
 
             print "Evaluating ..."
             if config.has_key('split') and config['split']:
-                left_batch, middle_batch, right_batch, y_batch, n_batch = zip(*eval_data)
+                left_batch, right_batch, y_batch, n_batch = zip(*eval_data)
                 feed = {m.left: np.array(left_batch), m.right: np.array(right_batch), m.labels: np.array(y_batch)}
             else:
                 x_batch, y_batch, n_batch = zip(*eval_data)
