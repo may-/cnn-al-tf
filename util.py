@@ -360,38 +360,26 @@ def calc_auc_pr(precision, recall):
 #
 ##########################################################
 
-#TODO
-def active_learning(data, batch_size, num_epochs, pool_size, shuffle=True):
-    data = np.array(data)
-    data_size = len(data)
-    num_batches_per_epoch = int(np.ceil(float(data_size)/batch_size))
-    pool_index = []
-    for epoch in range(num_epochs):
-        # Shuffle data at each epoch
-        if shuffle:
-            np.random.seed(RANDOM_SEED + epoch)
-            shuffle_indices = np.random.permutation(np.arange(data_size))
-            shuffled_data = data[shuffle_indices]
-        else:
-            shuffled_data = data
-
-    return
-
-#TODO
-def next_batch():
-    return
+def minmax_scale(seq, offset=1e-5):
+    maximum = np.max(seq, axis=0)
+    minimum = np.min(seq, axis=0)
+    std = (seq - minimum) / (maximum - minimum)
+    scaled = std * (1.0 - offset) + offset
+    return scaled
 
 
-def most_informative(pool_data, config, strategy='max_entropy'):
+def most_informative(pool_data, config, strategy='max_entropy', class_names=None, relations=None):
     import predict
 
-    scores, preds, oracle = predict.predict(pool_data, config)
-
-    # last batch
-    if config['batch_size'] >= len(pool_data):
-        idx = range(len(pool_data))
+    if strategy == 'model_change':
+        grad_len = predict.emb(pool_data, config, class_names=class_names, relations=relations)
+        idx = np.argsort(grad_len)
+        idx = list(idx)[-1 * config['batch_size']:] # take last-k examples
 
     else:
+        scores, _, _ = predict.predict(pool_data, config)
+
+
         if strategy == 'max_entropy':
             prob = [scipy.stats.entropy(s) for s in scores]
             idx = np.argsort(prob)
@@ -402,13 +390,16 @@ def most_informative(pool_data, config, strategy='max_entropy'):
             idx = np.argsort(prob)
             idx = list(idx)[:config['batch_size']] # take first-k examples
 
-        elif strategy == 'min_margin':
+        elif strategy == 'smallest_margin':
             prob = [s[-1] - s[-2] for s in np.sort(scores, axis=1)]
             idx = np.argsort(prob)
             idx = list(idx)[:config['batch_size']] # take first-k examples
 
-    # prediction
-    return idx, preds[5, :, :], oracle
+        else:
+            raise Exception('strategy not defined.')
+
+    return idx
+
 
 ##########################################################
 #

@@ -22,7 +22,7 @@ tf.app.flags.DEFINE_integer('vocab_size', 40000, 'Vocabulary size')
 tf.app.flags.DEFINE_integer('num_classes', 10, 'Number of class to consider')
 tf.app.flags.DEFINE_integer('sent_len', 200, 'Input sentence length.')
 tf.app.flags.DEFINE_float('l2_reg', 1e-4, 'l2 regularization weight')
-tf.app.flags.DEFINE_float('mu', 0.01, 'Negative sampling weight')
+tf.app.flags.DEFINE_float('mu', 0.001, 'Negative sampling weight')
 tf.app.flags.DEFINE_boolean('negative', False, 'Whether incorporate negative sampling')
 
 

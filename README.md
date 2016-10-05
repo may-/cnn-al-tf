@@ -13,11 +13,11 @@
 - [Scipy](http://www.scipy.org/)
 
 
-[//]: # "To visualize the results (`visualize.ipynb`)"
+To visualize the results (`visualize.ipynb`)
 
-[//]: # "- [Pandas](http://pandas.pydata.org/)"
-[//]: # "- [Matplotlib](matplotlib.org)"
-[//]: # "- [Scikit-learn](http://scikit-learn.org/)"
+- [Pandas](http://pandas.pydata.org/)
+- [Matplotlib](matplotlib.org)
+- [Scikit-learn](http://scikit-learn.org/)
 
 
 ## Data
@@ -72,15 +72,15 @@ may cause an error. If you want to train the model on another dataset, please ch
 
 - Display F1 and AUC score (overall performance)
     ```sh
-    python ./eval.py --train_dir=./train/1473898241
+    python ./eval.py --checkpoint_dir=./train/1473898241
     ```
 
 - Display classification report (class-wise performance)
     ```sh
-    python ./predict.py --train_dir=./train/1473898241
+    python ./predict.py --checkpoint_dir=./train/1473898241
     ```
 
-Replace `--train_dir` with the output from the training.
+Replace `--checkpoint_dir` with the output from the training.
 
 
 ### Run TensorBoard
@@ -96,27 +96,35 @@ tensorboard --logdir=./train/1473898241
 
 
 
-## Models
+[//]: # "## Models"
 
-- Hierarchical Multi-label Model  
-    class annotation:  
+[//]: # "- Hierarchical Multi-label Annotation  "
+[//]: # "    class annotation:  "
     
-- Negative Sampling Model  
-    objective function:  
+[//]: # "- Negative Sampling Model  "
+[//]: # "    objective function:  "
     
-- Active Learning on Word Embeddings  
+[//]: # "- Active Learning on Word Embeddings  "
 
 
 
-[//]: # "## Results"
+## Results
 
-[//]: # "|       |  P |  R |  F |AUC |"
-[//]: # "|:------|:--:|:--:|:--:|:--:|"
-[//]: # "|ML+NEG |0.93|0.89|0.91|0.92|"
-[//]: # "|ML+CONT|0.79|0.65|0.71|0.73|"
-[//]: # "|ML+CONT+NEG|0.82|0.75|0.78|0.79|"
+|      |   P  |   R  |  F1  |  AUC |
+|-----:|:----:|:----:|:----:|:----:|
+|ML    |0.7473|0.1360|0.2301|0.4399|
+|ML+NS |0.7406|0.1557|0.2573|0.4370|
+|HML   |0.7722|0.1732|0.2829|0.4685|
+|HML+NS|0.7862|0.1972|0.3153|0.4930|
+|ML+Split    |0.4932|0.0237|0.0451|0.2469|
+|ML+NS+Split |0.4476|0.0309|0.0578|0.2156|
+|HML+Split   |0.4828|0.0486|0.0883|0.2622|
+|HML+NS+Split|0.4732|0.0445|0.0813|0.2573|
 
-[//]: # "![F1](img/f1.png)"
+![PR-Curves](img/pr_curve.png)
+![AUC](img/auc.png)
+![F1](img/f1.png)
+![LOSS](img/loss.png)
 
 
 ## References

@@ -24,7 +24,7 @@ FLAGS = tf.app.flags.FLAGS
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
 # eval parameters
-tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'train'), 'Directory of the checkpoint files')
+tf.app.flags.DEFINE_string('checkpoint_dir', os.path.join(this_dir, 'train'), 'Directory of the checkpoint files')
 tf.app.flags.DEFINE_float('threshold', 0.5, 'Threshold value. Must be one of np.linspace(0, 1, 11)')
 
 
@@ -66,8 +66,8 @@ def evaluate(eval_data, config):
 
 
 def main(argv=None):
-    restore_param = util.load_from_dump(os.path.join(FLAGS.train_dir, 'flags.cPickle'))
-    restore_param['train_dir'] = FLAGS.train_dir
+    restore_param = util.load_from_dump(os.path.join(FLAGS.checkpoint_dir, 'flags.cPickle'))
+    restore_param['train_dir'] = FLAGS.checkpoint_dir
 
     if restore_param.has_key('split') and restore_param['split']:
         data = util.read_data_contextwise(restore_param['data_dir'], 'dev', restore_param['sent_len'],

@@ -23,7 +23,7 @@ FLAGS = tf.app.flags.FLAGS
 this_dir = os.path.abspath(os.path.dirname(__file__))
 
 # eval parameters
-tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'train'), 'Directory of the checkpoint files')
+tf.app.flags.DEFINE_string('checkpoint_dir', os.path.join(this_dir, 'train'), 'Directory of the checkpoint files')
 tf.app.flags.DEFINE_float('threshold', 0.5, 'Threshold value. Must be one of np.linspace(0, 1, 11)')
 
 
@@ -64,7 +64,7 @@ def predict(data, config):
 
 
 
-def emb(pool, config, threshold=0.2, class_names=None, relations=None):
+def emb(pool, config, class_names=None, relations=None):
     """ Compute gradients with respect tod embeddings layer. """
 
     config['dropout'] = 0.0 # no dropout
@@ -95,53 +95,62 @@ def emb(pool, config, threshold=0.2, class_names=None, relations=None):
 
             m.assign_lr(sess, config['init_lr'])
             gradients = []
-            y_pred = []
-            y_true = []
 
             # feed only one instance at a time (batch_size = 1)
             for instance in pool:
+                print '.',
                 saver.restore(sess, ckpt.model_checkpoint_path)
                 if config.has_key('split') and config['split']:
                     # get prediction
-                    feed = {m.left: instance[0].reshape((1,config['sent_len'])),
-                            m.right: instance[1].reshape((1,config['sent_len']))}
+                    feed = {m.left: instance[0].reshape((1, config['sent_len'])),
+                            m.right: instance[1].reshape((1, config['sent_len']))}
                     prob = sess.run(m.scores, feed_dict=feed)
-                    pred = tf.select(prob > threshold, tf.ones_like(prob), tf.zeros_like(prob))
-                    pred = np.array(pred.eval()).reshape((1,config['num_classes']))
 
                     # get total loss
-                    feed[m.labels] = pred
-                    if config['negative'] and class_names and relations:
-                        neg = util.pseudo_negative_sampling(pred, class_names, relations,
-                                                            hierarchical=config['hierarchical'])
-                        feed[m.negative] = np.array(neg.eval()).reshape((1,config['num_classes']))
-                    _, loss = sess.run([m.train_op, m.total_loss], feed_dict=feed)
+                    label = [0.0] * config['num_classes']
+                    losses = []
+                    for i in range(config['num_classes']):
+                        label[i] = 1.0
+                        feed[m.labels] = np.array(label).reshape((1, config['num_classes']))
+                        if config['negative'] and class_names and relations:
+                            neg = util.pseudo_negative_sampling(np.array(label), class_names, relations,
+                                                                hierarchical=config['hierarchical'])
+                            feed[m.negative] = np.array(neg.eval()).reshape((1, config['num_classes']))
+                        _, loss = sess.run([m.train_op, m.total_loss], feed_dict=feed)
+                        losses.append(loss)
 
                 else:
-                    # get prediction
-                    feed = {m.inputs: instance[0].reshape((1,config['sent_len']))}
+                    # get probability
+                    feed = {m.inputs: instance[0].reshape((1, config['sent_len']))}
                     prob = sess.run(m.scores, feed_dict=feed)
-                    pred = tf.select(prob > threshold, tf.ones_like(prob), tf.zeros_like(prob))
-                    pred = np.array(pred.eval()).reshape((1,config['num_classes']))
 
                     # get total loss
-                    feed[m.labels] = pred
-                    if config['negative'] and class_names and relations:
-                        neg = util.pseudo_negative_sampling(pred, class_names, relations,
-                                                            hierarchical=config['hierarchical'])
-                        feed[m.negative] = np.array(neg).reshape((1,config['num_classes']))
-                    _, loss= sess.run([m.train_op, m.total_loss], feed_dict=feed)
+                    label = [0.0] * config['num_classes']
+                    losses = []
+                    for i in range(config['num_classes']):
+                        label[i] = 1.0
+                        feed[m.labels] = np.array(label).reshape((1, config['num_classes']))
+                        if config['negative'] and class_names and relations:
+                            neg = util.pseudo_negative_sampling(np.array(label), class_names, relations,
+                                                                hierarchical=config['hierarchical'])
+                            feed[m.negative] = np.array(neg).reshape((1, config['num_classes']))
+                        _, loss = sess.run([m.train_op, m.total_loss], feed_dict=feed)
+                        losses.append(loss)
 
                 # get variable by name
                 emb = [var for var in tf.trainable_variables() if var.op.name.startswith('cnn/embedding')]
 
-                # compute gradients w.r.t. embeddings layer
-                grad = opt.compute_gradients(tf.cast(loss, dtype=tf.float32), emb)
-                gradients.append([g[1].eval() for g in grad])
-                y_pred.append(pred)
-                y_true.append(instance[-2])
+                marginal = []
+                scaled = util.minmax_scale(prob[0, :])
+                assert len(scaled) == config['num_classes']
+                for i, loss in enumerate(losses):
+                    # compute gradients w.r.t. embeddings layer
+                    grad = opt.compute_gradients(tf.cast(loss, dtype=tf.float32), emb)
+                    # compute norm and scale by the probability
+                    marginal.append(scaled[i] * np.linalg.norm(np.array([g[1].eval() for g in grad])))
+                gradients.append(np.sum(marginal))
 
-    return gradients, y_pred, y_true
+    return gradients
 
 
 
@@ -169,7 +178,7 @@ def report(y_true, y_pred, class_names, threshold=0.5):
     r = rec[idx, np.isfinite(rec[idx])]*count[np.isfinite(rec[idx])]
     f = f1[idx, np.isfinite(f1[idx])]*count[np.isfinite(f1[idx])]
     a = auc[np.isfinite(auc)]*count[np.isfinite(auc)]
-    ret += '%45s\t%.4f\t%.4f\t%.4f\t%.4f\t%4d\n' % ('total',
+    ret += '%45s\t%.4f\t%.4f\t%.4f\t%.4f\t%4d\n' % ('avg.',
                                                     np.sum(p)/count.sum(dtype=float),
                                                     np.sum(r)/count.sum(dtype=float),
                                                     np.sum(f)/count.sum(dtype=float),
@@ -180,8 +189,8 @@ def report(y_true, y_pred, class_names, threshold=0.5):
 
 
 def main(argv=None):
-    restore_param = util.load_from_dump(os.path.join(FLAGS.train_dir, 'flags.cPickle'))
-    restore_param['train_dir'] = FLAGS.train_dir
+    restore_param = util.load_from_dump(os.path.join(FLAGS.checkpoint_dir, 'flags.cPickle'))
+    restore_param['train_dir'] = FLAGS.checkpoint_dir
 
     if restore_param.has_key('split') and restore_param['split']:
         data = util.read_data_contextwise(restore_param['data_dir'], 'dev', restore_param['sent_len'],
