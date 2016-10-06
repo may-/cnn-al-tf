@@ -163,7 +163,7 @@ def train(train_data, test_data, class_names=None, relations=None):
                         start_time = time.time()
                         next_pool_idx = util.most_informative(pool_data, config, strategy=FLAGS.strategy,
                                                          class_names=class_names, relations=relations)
-                        query_time.append(time.time() - start_time)
+                        query_time.append((time.time() - start_time)/float(len(next_pool_idx)))
 
                         next_batch_idx = [pool_idx[i] for i in next_pool_idx]
                         indices = [i for i in indices if i not in next_batch_idx]
@@ -199,7 +199,7 @@ def train(train_data, test_data, class_names=None, relations=None):
                     # print log
                     if global_step % FLAGS.log_step == 0:
                         examples_per_sec = batch_size / duration
-                        avg_query_time = np.mean(np.array(query_time)/float(batch_size))
+                        avg_query_time = np.mean(query_time)
                         format_str = '%s: step %d/%d, f1 = %.4f, auc = %.4f, loss = %.4f ' + \
                                      '(%.1f examples/sec; %.3f sec/batch; %.3f sec/query), lr: %.6f'
                         print format_str % (datetime.now(), global_step, max_steps, f1, auc, loss_value,
@@ -265,7 +265,7 @@ def train(train_data, test_data, class_names=None, relations=None):
                     #if global_step % FLAGS.checkpoint_step == 0:
                     saver.save(sess, save_path, global_step=global_step)
             saver.save(sess, save_path, global_step=global_step)
-            print 'avg. query time = %.4f [sec]' % (np.mean(np.array(query_time)/float(batch_size)))
+            print 'avg. query time = %.4f [sec]' % (np.mean(query_time))
 
 
 def _summary_for_scalar(name, value):
