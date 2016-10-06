@@ -2,7 +2,7 @@
 
 ##########################################################
 #
-# Active Learning on Word Embeddings Layer of a Convolutional Neural Network
+# Active Learning for Convolutional Neural Network
 #
 #
 #   Note: this implementation is mostly based on
@@ -55,7 +55,7 @@ tf.app.flags.DEFINE_integer('summary_step', 50,
 #tf.app.flags.DEFINE_integer('checkpoint_step', 100, 'Save model after this step')
 # save model every step
 
-def train(train_data, test_data):
+def train(train_data, test_data, class_names=None, relations=None):
     # train_dir
     timestamp = str(int(time.time()))
     out_dir = os.path.abspath(os.path.join(FLAGS.train_dir, timestamp))
@@ -140,6 +140,7 @@ def train(train_data, test_data):
             train_loss = []
             train_auc = []
             train_f1_score = []
+            query_time = []
             for _ in range(FLAGS.num_epochs):
                 train_size = len(train_data)
                 indices = range(train_size)
@@ -149,25 +150,31 @@ def train(train_data, test_data):
                 while len(indices) > 0:
                     # first batch
                     if len(indices) == train_size:
-                        next_idx = indices[:FLAGS.batch_size]
+                        next_batch_idx = indices[:FLAGS.batch_size]
                         indices = indices[FLAGS.batch_size:]
                     # last batch
                     elif len(indices) < FLAGS.batch_size:
-                        next_idx = indices
+                        next_batch_idx = indices
                         indices = []
                     else:
-                        class_names = None
-                        relations = None
-                        if FLAGS.negative:
-                            class_names = util.load_from_dump(os.path.join(FLAGS.data_dir, 'classes.cPickle'))
-                            relations = util.load_from_dump(os.path.join(FLAGS.data_dir, 'relations.cPickle'))
                         pool_idx = indices[:FLAGS.pool_size]
                         pool_data = train_data[pool_idx]
-                        next_idx = util.most_informative(pool_data, config, strategy=FLAGS.strategy,
-                                                         class_names=class_names, relations=relations)
-                        indices = [i for i in indices if i not in next_idx]
 
-                    batch = train_data[next_idx]
+                        start_time = time.time()
+                        next_pool_idx = util.most_informative(pool_data, config, strategy=FLAGS.strategy,
+                                                         class_names=class_names, relations=relations)
+                        query_time.append(time.time() - start_time)
+
+                        next_batch_idx = [pool_idx[i] for i in next_pool_idx]
+                        indices = [i for i in indices if i not in next_batch_idx]
+
+
+
+                    # check indices
+                    #assert len(set(indices).intersection(next_batch_idx)) == 0
+
+
+                    batch = train_data[next_batch_idx]
                     batch_size = len(batch)
 
                     m.assign_lr(sess, current_lr)
@@ -192,12 +199,11 @@ def train(train_data, test_data):
                     # print log
                     if global_step % FLAGS.log_step == 0:
                         examples_per_sec = batch_size / duration
+                        avg_query_time = np.mean(query_time/float(batch_size))
                         format_str = '%s: step %d/%d, f1 = %.4f, auc = %.4f, loss = %.4f ' + \
-                                     '(%.1f examples/sec; %.3f sec/batch), lr: %.6f'
+                                     '(%.1f examples/sec; %.3f sec/batch; %.3f sec/query), lr: %.6f'
                         print format_str % (datetime.now(), global_step, max_steps, f1, auc, loss_value,
-                                            examples_per_sec, duration, current_lr)
-
-
+                                            examples_per_sec, duration, avg_query_time, current_lr)
 
 
                     # write summary
@@ -233,6 +239,7 @@ def train(train_data, test_data):
                         train_loss = []
                         train_auc = []
                         train_f1_score = []
+                        #query_time = []
 
 
 
@@ -258,6 +265,7 @@ def train(train_data, test_data):
                     #if global_step % FLAGS.checkpoint_step == 0:
                     saver.save(sess, save_path, global_step=global_step)
             saver.save(sess, save_path, global_step=global_step)
+            print 'avg. query time = %.4f [sec]' % (np.mean(query_time))
 
 
 def _summary_for_scalar(name, value):
@@ -273,7 +281,14 @@ def main(argv=None):
                                 negative=FLAGS.negative, hierarchical=FLAGS.hierarchical, shuffle=False)
     test_data = util.read_data(FLAGS.data_dir, 'dev', FLAGS.sent_len,
                                negative=FLAGS.negative, hierarchical=FLAGS.hierarchical)
-    train(train_data, test_data)
+
+    class_names = None
+    relations = None
+    if FLAGS.negative:
+        class_names = util.load_from_dump(os.path.join(FLAGS.data_dir, 'classes.cPickle'))
+        relations = util.load_from_dump(os.path.join(FLAGS.data_dir, 'relations.cPickle'))
+
+    train(train_data, test_data, class_names=class_names, relations=relations)
 
 
 if __name__ == '__main__':

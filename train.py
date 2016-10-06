@@ -23,9 +23,8 @@ import util
 FLAGS = tf.app.flags.FLAGS
 
 # train parameters
-this_dir = os.path.abspath(os.path.dirname(__file__))
-tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'data'), 'Directory of the data')
-tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'train'),
+tf.app.flags.DEFINE_string('data_dir', os.path.join(util.THIS_DIR, 'data'), 'Directory of the data')
+tf.app.flags.DEFINE_string('train_dir', os.path.join(util.THIS_DIR, 'train'),
                            'Directory to save training checkpoint files')
 tf.app.flags.DEFINE_boolean('hierarchical', False, 'Treat labels hierarchically or not')
 tf.app.flags.DEFINE_integer('num_epochs', 10, 'Number of epochs to run')

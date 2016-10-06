@@ -15,6 +15,7 @@ import tensorflow as tf
 import numpy as np
 
 
+
 import util
 
 FLAGS = tf.app.flags.FLAGS
@@ -164,11 +165,12 @@ def report(y_true, y_pred, class_names, threshold=0.5):
     count = np.sum(y_true, axis=0)
     auc_array = []
     ret = '%45s\t   P\t   R\t  F1\t  AUC\t  C\n' % ' '
+    ret += '\t' + '-' * 80 + '\n'
     for i, (c, p, r, f, s) in enumerate(zip(class_names, pre[5], rec[5], f1[5], count)):
         auc = util.calc_auc_pr(pre[:, i], rec[:, i])
         auc_array.append(auc)
         ret += '%45s\t%.4f\t%.4f\t%.4f\t%.4f\t%4d\n' % (c, p, r, f, auc, s)
-
+    ret += '\t' + '-' * 80 + '\n'
     auc = np.array(auc_array)
     try:
         idx = list(np.linspace(0, 1, 11)).index(FLAGS.threshold)
@@ -184,6 +186,7 @@ def report(y_true, y_pred, class_names, threshold=0.5):
                                                     np.sum(f)/count.sum(dtype=float),
                                                     np.sum(a)/count.sum(dtype=float),
                                                     count.sum())
+
 
     return ret
 

@@ -8,7 +8,7 @@ from codecs import open
 from collections import defaultdict, Counter
 import cPickle as pickle
 import numpy as np
-import scipy
+import scipy.stats
 
 
 # Special vocabulary symbols.

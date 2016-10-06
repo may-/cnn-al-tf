@@ -84,7 +84,7 @@ def main(argv=None):
         idx = 5
     f1 = (2.0 * pre[idx] * rec[idx]) / (pre[idx] + pre[idx])
     print '%s: loss = %.6f, f1 = %.4f, auc = %.4f' % (datetime.now(), loss, f1, auc)
-    util.dump_to_file(os.path.join(FLAGS.train_dir, 'results.cPickle'), {'precision': pre, 'recall': rec})
+    util.dump_to_file(os.path.join(FLAGS.checkpoint_dir, 'results.cPickle'), {'precision': pre, 'recall': rec})
 
 
 

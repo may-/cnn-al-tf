@@ -52,13 +52,13 @@ It creates `vocab.txt`, `*.ids` and `emb.npy` files.
 ### Training
 
 
-- Hierarchical Multi-label classification with negative sampling (HML+NEG):
+- Hierarchical Multi-label classification with negative sampling (HML+NS):
     ```sh
     python ./train.py --sent_len=163 --vocab_size=34368 --num_classes=21 \
     --hierarchical=True --negative=True --use_pretrain=True
     ```
     
-- Hierarchical Multi-label classification on split contexts with negative sampling (HML+CONT+NEG):
+- Hierarchical Multi-label classification on split contexts with negative sampling (HML+NS+Split):
     ```sh
     python ./train_split.py --sent_len=100 --vocab_size=34368 --num_classes=21 \
     --hierarchical=True --negative=True --use_pretrain=True

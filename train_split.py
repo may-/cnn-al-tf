@@ -13,9 +13,8 @@ import util
 FLAGS = tf.app.flags.FLAGS
 
 # train parameters
-this_dir = os.path.abspath(os.path.dirname(__file__))
-tf.app.flags.DEFINE_string('data_dir', os.path.join(this_dir, 'data'), 'Directory of the data')
-tf.app.flags.DEFINE_string('train_dir', os.path.join(this_dir, 'train'),
+tf.app.flags.DEFINE_string('data_dir', os.path.join(util.THIS_DIR, 'data'), 'Directory of the data')
+tf.app.flags.DEFINE_string('train_dir', os.path.join(util.THIS_DIR, 'train'),
                            'Directory to save training checkpoint files')
 tf.app.flags.DEFINE_boolean('hierarchical', False, 'Treat labels hierarchically or not')
 tf.app.flags.DEFINE_integer('num_epochs', 10, 'Number of epochs to run')
@@ -57,6 +56,7 @@ def train(train_data, test_data):
     config['split'] = True
 
     # save flags
+    config['train_dir'] = out_dir
     util.dump_to_file(os.path.join(out_dir, 'flags.cPickle'), config)
 
     # display parameter settings
@@ -90,7 +90,7 @@ def train(train_data, test_data):
 
             # assign pretrained embeddings
             if FLAGS.use_pretrain:
-                print "Initialize model with pretrained embeddings..."
+                print "Initializing model with pretrained embeddings ..."
                 pretrained_embedding = np.load(os.path.join(FLAGS.data_dir, 'emb.npy'))
                 m.assign_embedding(sess, pretrained_embedding)
 
