@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 
+##########################################################
+#
+# Train Convolutional Neural Network on Split-Context
+#
+#
+#   Note: this implementation is mostly based on
+#   https://github.com/yuhaozhang/sentence-convnet/blob/master/main.py
+#
+##########################################################
+
 from datetime import datetime
 import time
 import os

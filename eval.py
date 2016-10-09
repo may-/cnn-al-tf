@@ -21,10 +21,8 @@ import util
 FLAGS = tf.app.flags.FLAGS
 
 
-this_dir = os.path.abspath(os.path.dirname(__file__))
-
 # eval parameters
-tf.app.flags.DEFINE_string('checkpoint_dir', os.path.join(this_dir, 'train'), 'Directory of the checkpoint files')
+tf.app.flags.DEFINE_string('checkpoint_dir', os.path.join(util.THIS_DIR, 'train'), 'Directory of the checkpoint files')
 tf.app.flags.DEFINE_float('threshold', 0.5, 'Threshold value. Must be one of np.linspace(0, 1, 11)')
 
 
